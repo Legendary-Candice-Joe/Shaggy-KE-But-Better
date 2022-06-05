@@ -50,13 +50,24 @@ class Note extends FlxSprite
 	public static var KeySet:Array<Dynamic> = [
 		[A, S, W, D], // W A S D option
 		[A, S, D, LEFT, DOWN, RIGHT],
-		[A, S, D, F, SPACE, H, J, K, L],
+		[A, S, D, F, SPACE, J, K, L, SEMICOLON],
 		[D, F, J, K], // D F J K option
 		[S, D, F, J, K, L],
-		[A, S, D, F, SPACE, H, J, K, L],
+		[A, S, D, F, SPACE, J, K, L, SEMICOLON],
 		[Z, X, NUMPADTWO, NUMPADTHREE], // Z X TWO THREE option
 		[Z, X, C, NUMPADONE, NUMPADTWO, NUMPADTHREE],
-		[A, S, D, F, SPACE, NUMPADONE, NUMPADTWO, NUMPADTHREE, ENTER],
+		[A, S, D, F, SPACE, NUMPADONE, NUMPADTWO, NUMPADTHREE, ENTER]
+	];
+
+	public static var colourOrder:Array<Dynamic> = [
+		['purple', 'blue', 'green', 'red'],
+		['purple', 'green', 'red', 'yellow', 'blue', 'dark'],
+		['purple', 'blue', 'green', 'red', 'white', 'yellow', 'violet', 'darkred', 'dark'] // called darkred cause note assets originally used for the EK mod.
+	];
+
+	public static var stupidArray:Array<Dynamic> = [
+		[160, 120, 90],
+		[0.7, 0.6, 0.46]
 	];
 
 	public var isEndHold:Bool = false;
@@ -66,21 +77,9 @@ class Note extends FlxSprite
 		curKeySet = PlayState.mania + Std.int(FlxG.save.data.dfjk * 3);
 		curKeyBind = KeySet[curKeySet][noteData % PlayState.keyAmmo[PlayState.mania]];
 		
-		swagWidth = 160 * 0.7; //factor not the same as noteScale
-		noteScale = 0.7;
-		mania = 0;
-		if (PlayState.SONG.mania == 1)
-		{
-			swagWidth = 120 * 0.7;
-			noteScale = 0.6;
-			mania = 1;
-		}
-		else if (PlayState.SONG.mania == 2)
-		{
-			swagWidth = 90 * 0.7;
-			noteScale = 0.46;
-			mania = 2;
-		}
+		swagWidth = stupidArray[0][PlayState.SONG.mania] * 0.7; //factor not the same as noteScale
+		noteScale = stupidArray[1][PlayState.SONG.mania];
+		mania = PlayState.SONG.mania;
 		super();
 
 		if (prevNote == null)
@@ -139,7 +138,14 @@ class Note extends FlxSprite
 			default:
 				frames = Paths.getSparrowAtlas('NOTE_assets');
 
-				animation.addByPrefix('greenScroll', 'green0');
+				for(i in 0...PlayState.keyAmmo[mania]){
+					animation.addByPrefix(colourOrder[mania][i] + 'Scroll', colourOrder[mania][i] + '0');
+					if(isSustainNote){
+						animation.addByPrefix(colourOrder[mania][i] + 'holdend', colourOrder[mania][i] + ' hold end');
+						animation.addByPrefix(colourOrder[mania][i] + 'hold', colourOrder[mania][i] + ' hold piece');
+					}
+				}
+				/*animation.addByPrefix('greenScroll', 'green0'); this might come as a suprise, but loading every single animation is not very efficient...
 				animation.addByPrefix('redScroll', 'red0');
 				animation.addByPrefix('blueScroll', 'blue0');
 				animation.addByPrefix('purpleScroll', 'purple0');
@@ -168,7 +174,7 @@ class Note extends FlxSprite
 				animation.addByPrefix('yellowhold', 'yellow hold piece');
 				animation.addByPrefix('violethold', 'violet hold piece');
 				animation.addByPrefix('blackhold', 'black hold piece');
-				animation.addByPrefix('darkhold', 'dark hold piece');
+				animation.addByPrefix('darkhold', 'dark hold piece');*/
 
 				setGraphicSize(Std.int(width * noteScale));
 				updateHitbox();
@@ -180,12 +186,12 @@ class Note extends FlxSprite
 			case 0:
 			//nada
 		}
-		var frameN:Array<String> = ['purple', 'blue', 'green', 'red'];
-		if (mania == 1) frameN = ['purple', 'green', 'red', 'yellow', 'blue', 'dark'];
-		else if (mania == 2) frameN = ['purple', 'blue', 'green', 'red', 'white', 'yellow', 'violet', 'black', 'dark'];
+		//var frameN:Array<String> = ['purple', 'blue', 'green', 'red'];
+		//if (mania == 1) frameN = ['purple', 'green', 'red', 'yellow', 'blue', 'dark'];
+		//else if (mania == 2) frameN = ['purple', 'blue', 'green', 'red', 'white', 'yellow', 'violet', 'black', 'dark'];
 
 		x += swagWidth * noteData;
-		animation.play(frameN[noteData] + 'Scroll');
+		animation.play(colourOrder[mania][noteData] + 'Scroll');
 		// trace(prevNote);
 
 		if (isSustainNote && prevNote != null)
@@ -199,7 +205,7 @@ class Note extends FlxSprite
 
 			x += width / 2;
 
-			animation.play(frameN[noteData] + 'holdend');
+			animation.play(colourOrder[mania][noteData] + 'holdend');
 			switch (noteData)
 			{
 				case 0:
@@ -222,7 +228,7 @@ class Note extends FlxSprite
 					case 0:
 					//nada
 				}
-				prevNote.animation.play(frameN[prevNote.noteData] + 'hold');
+				prevNote.animation.play(colourOrder[mania][prevNote.noteData] + 'hold');
 				prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * PlayState.SONG.speed * (0.7 / noteScale);
 				prevNote.isEndHold = false;
 				prevNote.updateHitbox();

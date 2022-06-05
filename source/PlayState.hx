@@ -180,7 +180,7 @@ class PlayState extends MusicBeatState
 
 	var gf_launched:Bool = false;
 
-	public static var endNotePositions:Array<Float> = [70, 85, 90, 87];
+	public static var endNotePositions:Array<Float> = [69, 85, 84, 87];
 	public static var singDir:Array<Dynamic> = [
 		['LEFT','DOWN','UP','RIGHT'],
 		['LEFT','UP','RIGHT','LEFT','DOWN','RIGHT'],
@@ -1497,7 +1497,7 @@ class PlayState extends MusicBeatState
 			{
 				if (ctrTime == 0)
 				{
-					var cText:Array<String> = ['A', 'S', 'D', 'F', 'S\nP\nA\nC\nE', 'H', 'J', 'K', 'L'];
+					var cText:Array<String> = ['A', 'S', 'D', 'F', 'S\nP\nA\nC\nE', 'J', 'K', 'L', ';'];
 
 					if (FlxG.save.data.dfjk == 2)
 					{
@@ -1796,13 +1796,13 @@ class PlayState extends MusicBeatState
 
 	var OMG:Array<Bool> = [false, false, false, false, false, false, false, false, false];
 	
-	function lmaoImDumb(fkN:Int)
+	function lmaoImDumb(fkN:Int, sustainQ:Bool)
 	{
 		var nData = fkN % (keyAmmo[mania]);
 		
 		if (strumLineNotes.members[nData].animation.curAnim.name == "confirm") OMG[nData] = true;
 		
-		new FlxTimer().start(0.12, function(tmr:FlxTimer)
+		new FlxTimer().start(sustainQ ? 0.2 : 0.1, function(tmr:FlxTimer)
 		{
 			if (!OMG[nData]) strumLineNotes.members[nData].animation.play("static");
 			centerSHStrums(nData);
@@ -1876,22 +1876,19 @@ class PlayState extends MusicBeatState
 					babyArrow.antialiasing = true;
 					babyArrow.setGraphicSize(Std.int(babyArrow.width * Note.noteScale));
 
-					var nSuf:Array<String> = ['LEFT', 'DOWN', 'UP', 'RIGHT'];
-					var pPre:Array<String> = ['left', 'down', 'up', 'right'];
-					switch (mania)
-					{
-						case 1:
-							nSuf = ['LEFT', 'UP', 'RIGHT', 'LEFT', 'DOWN', 'RIGHT'];
-							pPre = ['left', 'up', 'right', 'yel', 'down', 'dark'];
-						case 2:
-							nSuf = ['LEFT', 'DOWN', 'UP', 'RIGHT', 'SPACE', 'LEFT', 'DOWN', 'UP', 'RIGHT'];
-							pPre = ['left', 'down', 'up', 'right', 'white', 'yel', 'violet', 'black', 'dark'];
-							babyArrow.x -= Note.tooMuch;
-					}
+					var nSuf:Array<Dynamic> = [
+						['LEFT', 'DOWN', 'UP', 'RIGHT'],
+						['LEFT', 'UP', 'RIGHT', 'LEFT', 'DOWN', 'RIGHT'],
+						['LEFT', 'DOWN', 'UP', 'RIGHT', 'SPACE', 'LEFT', 'DOWN', 'UP', 'RIGHT']
+					];
+					if(mania == 2) babyArrow.x -= Note.tooMuch;
+					var pPre:Array<String> = Note.colourOrder[mania];
 					babyArrow.x += Note.swagWidth * i;
-					babyArrow.animation.addByPrefix('static', 'arrow' + nSuf[i]);
+					babyArrow.animation.addByPrefix('static', 'arrow' + nSuf[mania][i]);
 					babyArrow.animation.addByPrefix('pressed', pPre[i] + ' press', 24, false);
 					babyArrow.animation.addByPrefix('confirm', pPre[i] + ' confirm', 24, false);
+
+					trace(nSuf[mania] + " a " + pPre + " b " + Note.swagWidth + " c " + babyArrow.x);
 			}
 
 			babyArrow.updateHitbox();
@@ -1990,7 +1987,7 @@ class PlayState extends MusicBeatState
 		
 		dad.playAnim('sing' + singDir[mania][daNote.noteData] + altAnim, true);
 
-		lmaoImDumb(daNote.noteData);
+		lmaoImDumb(daNote.noteData, daNote.isSustainNote);
 		dad.holdTimer = 0;
 
 		if (SONG.needsVoices)
@@ -2639,7 +2636,7 @@ class PlayState extends MusicBeatState
 
 					if (SONG.validScore)
 					{
-						NGio.unlockMedal(60961);
+						//NGio.unlockMedal(60961);
 						Highscore.saveWeekScore(storyWeek, campaignScore, storyDifficulty);
 					}
 
